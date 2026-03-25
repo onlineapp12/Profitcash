@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ProfitCash – Earn Daily</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<style>
+:root {
+  --black: #080a0f;
+  --dark1: #0d1117;
+  --dark2: #141922;
+  --dark3: #1c2433;
+  --dark4: #243040;
+  --red: #e63946;
+  --red2: #c1121f;
+  --red-glow: rgba(230,57,70,0.35);
+  --blue: #1d6fe8;
+  --blue2: #0a4fc4;
+  --blue-glow: rgba(29,111,232,0.35);
+  --cyan: #00d4ff;
+  --cyan-glow: rgba(0,212,255,0.2);
+  --green: #00c853;
+  --green-glow: rgba(0,200,83,0.2);
+  --gold: #ffd700;
+  --text: #e8edf5;
+  --text2: #9bacc4;
+  --text3: #5c7494;
+  --border: rgba(255,255,255,0.07);
+  --card: rgba(20,25,35,0.9);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  font-family: 'Exo 2', sans-serif;
+  background: var(--black);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background: radial-gradient(ellipse 80% 40% at 20% 0%, rgba(29,111,232,0.12) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 30% at 80% 100%, rgba(230,57,70,0.1) 0%, transparent 60%);
+  pointer-events:none; z-index:0;
+}
+
+/* ===== SCREENS ===== */
+.screen { display:none; position:relative; z-index:1; }
+.screen.active { display:block; }
+
+/* ===== AUTH SCREENS ===== */
+.auth-wrap {
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:24px 20px;
+  background: linear-gradient(160deg, #080a0f 0%, #0d1320 50%, #080d14 100%);
+}
+
+.logo-area { text-align:center; margin-bottom:32px; }
+.logo-icon {
+  width:72px; height:72px; border-radius:20px;
+  background: linear-gradient(135deg, var(--blue) 0%, var(--red) 100%);
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:32px; margin-bottom:12px;
+  box-shadow: 0 0 40px var(--blue-glow), 0 0 20px var(--red-glow);
+  animation: pulse-logo 3s ease-in-out infinite;
+}
+@keyframes pulse-logo {
+  0%,100% { box-shadow: 0 0 40px var(--blue-glow), 0 0 20px var(--red-glow); }
+  50% { box-shadow: 0 0 60px var(--blue-glow), 0 0 40px var(--red-glow); }
+}
+.logo-name { font-family:'Rajdhani',sans-serif; font-size:32px; font-weight:700; letter-spacing:2px; }
+.logo-name span { color:var(--red); }
+.logo-tag { color:var(--text2); font-size:13px; margin-top:4px; }
+
+.auth-card {
+  width:100%; max-width:420px;
+  background: var(--dark1);
+  border:1px solid var(--border);
+  border-radius:20px; padding:28px 24px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+}
+.auth-title { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; margin-bottom:6px; }
+.auth-sub { color:var(--text2); font-size:13px; margin-bottom:24px; }
+
+.form-group { margin-bottom:16px; }
+.form-label { display:block; font-size:12px; font-weight:600; color:var(--text2); margin-bottom:6px; letter-spacing:0.5px; text-transform:uppercase; }
+.form-input {
+  width:100%; background: var(--dark2);
+  border:1px solid var(--border); border-radius:10px;
+  padding:12px 14px; color:var(--text); font-family:'Exo 2',sans-serif; font-size:14px;
+  outline:none; transition:border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus { border-color:var(--blue); box-shadow: 0 0 0 3px rgba(29,111,232,0.15); }
+.form-input::placeholder { color:var(--text3); }
+
+.btn {
+  width:100%; padding:13px; border:none; border-radius:10px;
+  font-family:'Exo 2',sans-serif; font-size:15px; font-weight:700; cursor:pointer;
+  letter-spacing:0.5px; transition:all 0.2s; position:relative; overflow:hidden;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue2) 100%);
+  color:#fff;
+  box-shadow: 0 4px 20px rgba(29,111,232,0.4);
+}
+.btn-primary:hover { transform:translateY(-1px); box-shadow: 0 8px 28px rgba(29,111,232,0.5); }
+.btn-primary:active { transform:translateY(0); }
+.btn-red {
+  background: linear-gradient(135deg, var(--red) 0%, var(--red2) 100%);
+  color:#fff;
+  box-shadow: 0 4px 20px rgba(230,57,70,0.4);
+}
+.btn-outline {
+  background:transparent; border:1px solid var(--border);
+  color:var(--text2); margin-top:8px;
+}
+.btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+.btn-sm { width:auto; padding:8px 16px; font-size:13px; border-radius:8px; }
+.btn-green { background: linear-gradient(135deg, #00c853, #00952d); color:#fff; box-shadow: 0 4px 16px var(--green-glow); }
+.btn-gold { background: linear-gradient(135deg, #ffd700, #e6a800); color:#000; font-weight:800; }
+
+.auth-switch { text-align:center; margin-top:20px; color:var(--text2); font-size:13px; }
+.auth-switch a { color:var(--blue); text-decoration:none; font-weight:600; cursor:pointer; }
+
+.ref-note {
+  background: rgba(29,111,232,0.1);
+  border:1px solid rgba(29,111,232,0.2);
+  border-radius:8px; padding:10px 12px;
+  font-size:12px; color:var(--cyan); margin-bottom:16px;
+}
+
+/* ===== APP SHELL ===== */
+#app-shell { display:none; flex-direction:column; min-height:100vh; }
+#app-shell.active { display:flex; }
+
+.top-bar {
+  background: var(--dark1);
+  border-bottom:1px solid var(--border);
+  padding:14px 16px; display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:100;
+  backdrop-filter:blur(10px);
+}
+.top-bar-title { font-family:'Rajdhani',sans-serif; font-size:18px; font-weight:700; letter-spacing:1px; }
+.top-logo { font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; letter-spacing:2px; color:var(--cyan); }
+.top-logo span { color:var(--red); }
+
+.icon-btn {
+  width:36px; height:36px; background:var(--dark2);
+  border:1px solid var(--border); border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:16px; transition:all 0.2s; color:var(--text);
+}
+.icon-btn:hover { border-color:var(--blue); }
+
+.main-content { flex:1; padding:0 0 80px 0; overflow-y:auto; }
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav {
+  position:fixed; bottom:0; left:0; right:0;
+  background: var(--dark1);
+  border-top:1px solid var(--border);
+  display:flex; z-index:100;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.nav-item {
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  padding:10px 4px 8px; cursor:pointer; transition:all 0.2s;
+  position:relative;
+}
+.nav-item .nav-icon { font-size:20px; margin-bottom:3px; transition:transform 0.2s; }
+.nav-item .nav-label { font-size:10px; color:var(--text3); font-weight:600; letter-spacing:0.3px; }
+.nav-item.active .nav-label { color:var(--blue); }
+.nav-item.active .nav-icon { transform:translateY(-2px); }
+.nav-item::after {
+  content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+  width:0; height:2px; background:var(--blue); border-radius:1px; transition:width 0.2s;
+}
+.nav-item.active::after { width:24px; }
+
+/* ===== HOME PAGE ===== */
+.home-hero {
+  padding:20px 16px 0;
+  background: linear-gradient(180deg, rgba(29,111,232,0.08) 0%, transparent 100%);
+}
+.user-greet { font-size:13px; color:var(--text2); margin-bottom:2px; }
+.user-name-big { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; }
+
+.balance-card {
+  margin:16px 0;
+  background: linear-gradient(135deg, #0a1a3a 0%, #0d2050 50%, #0a1a3a 100%);
+  border:1px solid rgba(29,111,232,0.3);
+  border-radius:18px; padding:20px;
+  position:relative; overflow:hidden;
+  box-shadow: 0 8px 32px rgba(29,111,232,0.2);
+}
+.balance-card::before {
+  content:''; position:absolute; top:-30px; right:-30px;
+  width:120px; height:120px;
+  background: radial-gradient(circle, rgba(29,111,232,0.3), transparent);
+  border-radius:50%;
+}
+.balance-label { font-size:12px; color:var(--text2); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+.balance-amount { font-family:'Rajdhani',sans-serif; font-size:38px; font-weight:700; color:var(--cyan); line-height:1.1; margin:4px 0 12px; }
+.balance-amount .currency { font-size:20px; color:var(--text2); }
+.balance-row { display:flex; gap:12px; }
+.balance-mini { flex:1; background:rgba(255,255,255,0.05); border-radius:10px; padding:10px; }
+.balance-mini-label { font-size:11px; color:var(--text3); margin-bottom:2px; }
+.balance-mini-val { font-family:'Rajdhani',sans-serif; font-size:17px; font-weight:700; color:var(--text); }
+
+.stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; padding:0 16px 16px; }
+.stat-card {
+  background: var(--dark2);
+  border:1px solid var(--border);
+  border-radius:14px; padding:14px;
+  position:relative; overflow:hidden;
+}
+.stat-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+}
+.stat-card.c-red::before { background: linear-gradient(90deg, var(--red), transparent); }
+.stat-card.c-blue::before { background: linear-gradient(90deg, var(--blue), transparent); }
+.stat-card.c-green::before { background: linear-gradient(90deg, var(--green), transparent); }
+.stat-card.c-gold::before { background: linear-gradient(90deg, var(--gold), transparent); }
+.stat-card.c-cyan::before { background: linear-gradient(90deg, var(--cyan), transparent); }
+.stat-card.c-purple::before { background: linear-gradient(90deg, #8b5cf6, transparent); }
+.stat-icon { font-size:22px; margin-bottom:8px; }
+.stat-label { font-size:11px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:4px; }
+.stat-val { font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; }
+.stat-val.red { color:var(--red); }
+.stat-val.blue { color:var(--blue); }
+.stat-val.green { color:var(--green); }
+.stat-val.gold { color:var(--gold); }
+.stat-val.cyan { color:var(--cyan); }
+.stat-val.purple { color:#8b5cf6; }
+
+.section-title {
+  font-family:'Rajdhani',sans-serif; font-size:17px; font-weight:700;
+  padding:0 16px 10px; display:flex; align-items:center; gap:8px;
+}
+.section-title .dot { width:6px; height:6px; border-radius:50%; background:var(--blue); }
+
+/* Quick actions */
+.quick-actions { display:flex; gap:10px; padding:0 16px 16px; overflow-x:auto; }
+.quick-actions::-webkit-scrollbar { display:none; }
+.quick-btn {
+  flex:0 0 auto; display:flex; flex-direction:column; align-items:center;
+  gap:8px; padding:14px 18px; border-radius:14px;
+  background: var(--dark2); border:1px solid var(--border);
+  cursor:pointer; transition:all 0.2s;
+}
+.quick-btn:hover { border-color:var(--blue); transform:translateY(-2px); }
+.quick-btn .qb-icon { font-size:24px; }
+.quick-btn .qb-label { font-size:11px; font-weight:600; color:var(--text2); white-space:nowrap; }
+
+/* Support Banner */
+.support-banner {
+  margin:0 16px 16px;
+  background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(29,111,232,0.1));
+  border:1px solid rgba(0,212,255,0.2);
+  border-radius:12px; padding:12px 16px;
+  display:flex; align-items:center; gap:12px; cursor:pointer;
+}
+.support-banner a { text-decoration:none; color:inherit; display:flex; align-items:center; gap:12px; width:100%; }
+.support-icon { font-size:28px; }
+.support-text h4 { font-size:14px; font-weight:700; color:var(--cyan); margin-bottom:2px; }
+.support-text p { font-size:11px; color:var(--text2); }
+
+/* ===== PLANS PAGE ===== */
+.plans-list { padding:16px; display:flex; flex-direction:column; gap:14px; }
+.plan-card {
+  background: var(--dark2);
+  border:1px solid var(--border);
+  border-radius:16px; overflow:hidden;
+  transition:all 0.2s; position:relative;
+}
+.plan-card.active-plan { border-color:var(--green); box-shadow:0 0 20px var(--green-glow); }
+.plan-card.active-plan::after {
+  content:'ACTIVE'; position:absolute; top:12px; right:12px;
+  background:var(--green); color:#000; font-size:10px; font-weight:800;
+  padding:3px 8px; border-radius:20px; letter-spacing:0.5px;
+}
+.plan-header {
+  padding:16px;
+  background: linear-gradient(135deg, rgba(29,111,232,0.15), rgba(230,57,70,0.1));
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.plan-name { font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; }
+.plan-invest { font-size:13px; color:var(--text2); }
+.plan-invest span { color:var(--gold); font-weight:700; font-size:16px; }
+.plan-body { padding:14px 16px; }
+.plan-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:14px; }
+.plan-stat { background:var(--dark3); border-radius:10px; padding:10px; }
+.plan-stat-label { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.3px; margin-bottom:3px; }
+.plan-stat-val { font-family:'Rajdhani',sans-serif; font-size:16px; font-weight:700; }
+
+/* ===== TASKS PAGE ===== */
+.tasks-header { padding:16px; }
+.tasks-progress-wrap { background:var(--dark2); border-radius:14px; padding:16px; margin-bottom:16px; border:1px solid var(--border); }
+.tasks-progress-label { display:flex; justify-content:space-between; font-size:13px; margin-bottom:8px; }
+.progress-bar { height:8px; background:var(--dark3); border-radius:4px; overflow:hidden; }
+.progress-fill { height:100%; border-radius:4px; background: linear-gradient(90deg, var(--blue), var(--cyan)); transition:width 0.5s; }
+.tasks-earning-info { display:flex; gap:10px; margin-top:12px; }
+.tei { flex:1; text-align:center; }
+.tei-val { font-family:'Rajdhani',sans-serif; font-size:18px; font-weight:700; color:var(--cyan); }
+.tei-label { font-size:11px; color:var(--text3); }
+
+.tasks-list { padding:0 16px; display:flex; flex-direction:column; gap:10px; }
+.task-item {
+  background:var(--dark2); border:1px solid var(--border);
+  border-radius:14px; padding:14px;
+  display:flex; align-items:flex-start; gap:12px;
+  transition:all 0.2s;
+}
+.task-item.done { border-color:rgba(0,200,83,0.3); background:rgba(0,200,83,0.05); }
+.task-num {
+  width:32px; height:32px; border-radius:10px; flex-shrink:0;
+  background: linear-gradient(135deg, var(--blue), var(--blue2));
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:14px;
+}
+.task-item.done .task-num { background: linear-gradient(135deg, var(--green), #00952d); }
+.task-info { flex:1; }
+.task-title { font-size:14px; font-weight:600; margin-bottom:4px; }
+.task-desc { font-size:12px; color:var(--text2); line-height:1.4; }
+.task-reward { font-size:13px; color:var(--cyan); font-weight:700; margin-top:6px; }
+.task-actions { margin-top:10px; display:flex; gap:8px; }
+.task-check { font-size:22px; flex-shrink:0; margin-top:4px; }
+
+/* ===== DEPOSIT PAGE ===== */
+.dep-page { padding:16px; }
+.pay-info-card {
+  background: linear-gradient(135deg, rgba(0,200,83,0.1), rgba(29,111,232,0.1));
+  border:1px solid rgba(0,200,83,0.25);
+  border-radius:14px; padding:16px; margin-bottom:16px;
+}
+.pay-info-title { font-size:14px; font-weight:700; color:var(--green); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.pay-info-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.pay-info-label { font-size:12px; color:var(--text2); }
+.pay-info-val { font-size:13px; font-weight:600; color:var(--text); }
+.copy-btn {
+  background:transparent; border:1px solid var(--border); border-radius:6px;
+  padding:3px 8px; font-size:11px; color:var(--blue); cursor:pointer; font-family:'Exo 2',sans-serif;
+}
+
+.min-dep-note {
+  background:rgba(230,57,70,0.1); border:1px solid rgba(230,57,70,0.25);
+  border-radius:10px; padding:10px 12px; font-size:12px; color:var(--red);
+  margin-bottom:16px; display:flex; align-items:center; gap:8px;
+}
+
+.dep-history-list { display:flex; flex-direction:column; gap:10px; margin-top:16px; }
+.history-item {
+  background:var(--dark2); border:1px solid var(--border); border-radius:12px;
+  padding:12px 14px; display:flex; justify-content:space-between; align-items:center;
+}
+.history-left h4 { font-size:14px; font-weight:600; margin-bottom:3px; }
+.history-left p { font-size:12px; color:var(--text2); }
+.status-badge {
+  padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.5px;
+}
+.badge-pending { background:rgba(255,183,0,0.15); color:#ffb700; border:1px solid rgba(255,183,0,0.3); }
+.badge-approved { background:rgba(0,200,83,0.15); color:var(--green); border:1px solid rgba(0,200,83,0.3); }
+.badge-rejected { background:rgba(230,57,70,0.15); color:var(--red); border:1px solid rgba(230,57,70,0.3); }
+
+/* ===== WITHDRAW PAGE ===== */
+.withdraw-page { padding:16px; }
+.withdraw-rule-card {
+  background:rgba(230,57,70,0.08); border:1px solid rgba(230,57,70,0.2);
+  border-radius:12px; padding:12px 14px; margin-bottom:16px;
+}
+.withdraw-rule-title { font-size:13px; font-weight:700; color:var(--red); margin-bottom:6px; }
+.withdraw-rule-text { font-size:12px; color:var(--text2); line-height:1.5; }
+.withdraw-rule-text span { color:var(--red); font-weight:700; }
+
+/* ===== REFERRAL PAGE ===== */
+.ref-page { padding:16px; }
+.ref-hero {
+  background: linear-gradient(135deg, #0a1a3a, #1a0a20);
+  border:1px solid rgba(138,43,226,0.3);
+  border-radius:16px; padding:20px; margin-bottom:16px; text-align:center;
+  position:relative; overflow:hidden;
+}
+.ref-hero::before {
+  content:''; position:absolute; top:-40px; left:50%; transform:translateX(-50%);
+  width:200px; height:200px;
+  background: radial-gradient(circle, rgba(138,43,226,0.15), transparent);
+  border-radius:50%;
+}
+.ref-big-icon { font-size:48px; margin-bottom:12px; }
+.ref-code-box {
+  background:var(--dark2); border:1px solid var(--border);
+  border-radius:12px; padding:14px 16px;
+  display:flex; align-items:center; justify-content:space-between; margin:12px 0;
+}
+.ref-code { font-family:'Rajdhani',sans-serif; font-size:24px; font-weight:700; color:var(--cyan); letter-spacing:2px; }
+
+.ref-levels { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+.ref-level-card {
+  background:var(--dark2); border:1px solid var(--border);
+  border-radius:12px; padding:14px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.ref-level-left { display:flex; align-items:center; gap:12px; }
+.ref-level-badge {
+  width:40px; height:40px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;
+}
+.lvl1 { background: linear-gradient(135deg, #ffd700, #e6a800); color:#000; }
+.lvl2 { background: linear-gradient(135deg, #c0c0c0, #888); color:#000; }
+.lvl3 { background: linear-gradient(135deg, #cd7f32, #8b4513); color:#fff; }
+.ref-level-info h4 { font-size:14px; font-weight:700; margin-bottom:2px; }
+.ref-level-info p { font-size:12px; color:var(--text2); }
+.ref-level-pct { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; color:var(--green); }
+
+.ref-link-box {
+  background:var(--dark2); border:1px solid var(--border);
+  border-radius:12px; padding:14px; margin-bottom:16px;
+}
+.ref-link-label { font-size:12px; color:var(--text2); margin-bottom:6px; font-weight:600; }
+.ref-link { font-size:12px; color:var(--blue); word-break:break-all; margin-bottom:10px; }
+
+/* ===== PROFILE PAGE ===== */
+.profile-page { padding:16px; }
+.profile-header {
+  display:flex; flex-direction:column; align-items:center;
+  padding:24px; background:var(--dark2); border-radius:16px; border:1px solid var(--border);
+  margin-bottom:16px; text-align:center;
+}
+.avatar {
+  width:72px; height:72px; border-radius:50%;
+  background: linear-gradient(135deg, var(--blue), var(--red));
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; font-weight:800; margin-bottom:12px;
+  box-shadow: 0 0 30px var(--blue-glow);
+}
+.profile-name { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; margin-bottom:4px; }
+.profile-email { font-size:13px; color:var(--text2); margin-bottom:12px; }
+.profile-badge {
+  background: linear-gradient(135deg, rgba(29,111,232,0.2), rgba(0,212,255,0.1));
+  border:1px solid rgba(0,212,255,0.3);
+  border-radius:20px; padding:4px 14px; font-size:12px; color:var(--cyan); font-weight:600;
+}
+
+.profile-menu { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+.menu-item {
+  background:var(--dark2); border:1px solid var(--border); border-radius:12px;
+  padding:14px 16px; display:flex; align-items:center; gap:12px; cursor:pointer;
+  transition:all 0.2s;
+}
+.menu-item:hover { border-color:var(--blue); }
+.menu-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+.mi-blue { background:rgba(29,111,232,0.15); }
+.mi-green { background:rgba(0,200,83,0.15); }
+.mi-red { background:rgba(230,57,70,0.15); }
+.mi-gold { background:rgba(255,215,0,0.15); }
+.menu-text h4 { font-size:14px; font-weight:600; margin-bottom:2px; }
+.menu-text p { font-size:12px; color:var(--text2); }
+.menu-arrow { margin-left:auto; color:var(--text3); font-size:16px; }
+
+/* ===== ADMIN PANEL ===== */
+.admin-wrap { padding:16px; }
+.admin-hero {
+  background: linear-gradient(135deg, #1a0010, #0d0a1a);
+  border:1px solid rgba(230,57,70,0.3);
+  border-radius:16px; padding:16px; margin-bottom:16px;
+  display:flex; align-items:center; gap:12px;
+}
+.admin-avatar {
+  width:50px; height:50px; border-radius:14px;
+  background: linear-gradient(135deg, var(--red), #8b0000);
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+  box-shadow: 0 0 20px var(--red-glow);
+}
+.admin-title { font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; color:var(--red); }
+.admin-sub { font-size:12px; color:var(--text2); }
+
+.admin-tabs {
+  display:flex; gap:6px; margin-bottom:16px; overflow-x:auto;
+}
+.admin-tabs::-webkit-scrollbar { display:none; }
+.admin-tab {
+  flex:0 0 auto; padding:8px 14px; border-radius:8px;
+  background:var(--dark2); border:1px solid var(--border);
+  font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; color:var(--text2);
+}
+.admin-tab.active { background:var(--red); border-color:var(--red); color:#fff; }
+
+.admin-stats { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:16px; }
+.admin-stat {
+  background:var(--dark2); border:1px solid var(--border); border-radius:12px; padding:14px;
+  text-align:center;
+}
+.admin-stat-icon { font-size:24px; margin-bottom:6px; }
+.admin-stat-val { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; color:var(--cyan); }
+.admin-stat-label { font-size:11px; color:var(--text3); margin-top:2px; }
+
+.admin-section { display:none; }
+.admin-section.active { display:block; }
+
+.admin-item {
+  background:var(--dark2); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:10px;
+}
+.admin-item-row { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
+.admin-item-key { font-size:12px; color:var(--text3); }
+.admin-item-val { font-size:13px; font-weight:600; text-align:right; word-break:break-all; max-width:60%; }
+.admin-item-actions { display:flex; gap:8px; margin-top:10px; }
+.btn-approve { background: linear-gradient(135deg, var(--green), #00952d); color:#fff; border:none; border-radius:8px; padding:7px 14px; font-family:'Exo 2',sans-serif; font-size:12px; font-weight:700; cursor:pointer; }
+.btn-reject { background: linear-gradient(135deg, var(--red), var(--red2)); color:#fff; border:none; border-radius:8px; padding:7px 14px; font-family:'Exo 2',sans-serif; font-size:12px; font-weight:700; cursor:pointer; }
+.btn-block { background: rgba(255,183,0,0.15); color:#ffb700; border:1px solid rgba(255,183,0,0.3); border-radius:8px; padding:7px 14px; font-family:'Exo 2',sans-serif; font-size:12px; font-weight:700; cursor:pointer; }
+.btn-unblock { background: rgba(0,200,83,0.15); color:var(--green); border:1px solid rgba(0,200,83,0.3); border-radius:8px; padding:7px 14px; font-family:'Exo 2',sans-serif; font-size:12px; font-weight:700; cursor:pointer; }
+
+/* ===== MODALS ===== */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200;
+  display:none; align-items:flex-end; justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:var(--dark1); border:1px solid var(--border);
+  border-radius:20px 20px 0 0; padding:24px 20px;
+  width:100%; max-width:500px;
+  max-height:90vh; overflow-y:auto;
+  animation: slide-up 0.3s ease;
+}
+@keyframes slide-up { from { transform:translateY(100%); } to { transform:translateY(0); } }
+.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.modal-title { font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; }
+.modal-close {
+  width:32px; height:32px; background:var(--dark2); border:1px solid var(--border);
+  border-radius:8px; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:18px; color:var(--text2);
+}
+
+/* ===== TOAST ===== */
+.toast {
+  position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--dark1); border:1px solid var(--border);
+  border-radius:12px; padding:12px 20px; font-size:14px; font-weight:600;
+  z-index:300; opacity:0; transition:all 0.3s; pointer-events:none; white-space:nowrap;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.success { border-color:var(--green); color:var(--green); }
+.toast.error { border-color:var(--red); color:var(--red); }
+.toast.info { border-color:var(--blue); color:var(--blue); }
+
+/* ===== FORGOT PASSWORD ===== */
+#forgot-screen { display:none; }
+#forgot-screen.active { display:block; }
+
+/* Daily earning animation */
+.earn-badge {
+  display:inline-block;
+  animation: earn-pulse 2s ease-in-out infinite;
+}
+@keyframes earn-pulse {
+  0%,100% { opacity:1; }
+  50% { opacity:0.6; }
+}
+
+.divider { height:1px; background:var(--border); margin:16px 0; }
+.empty-state { text-align:center; padding:40px 20px; color:var(--text3); }
+.empty-state .es-icon { font-size:48px; margin-bottom:12px; opacity:0.5; }
+.empty-state p { font-size:14px; }
+
+.task-no-plan {
+  padding:24px 16px; text-align:center;
+}
+.task-no-plan .icon { font-size:56px; margin-bottom:16px; }
+.task-no-plan h3 { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; margin-bottom:8px; }
+.task-no-plan p { color:var(--text2); font-size:14px; line-height:1.6; }
+
+.withdraw-blocked {
+  background:rgba(230,57,70,0.1); border:1px solid rgba(230,57,70,0.3);
+  border-radius:14px; padding:20px; text-align:center; margin-bottom:16px;
+}
+.withdraw-blocked .icon { font-size:40px; margin-bottom:10px; }
+.withdraw-blocked h3 { font-size:16px; font-weight:700; color:var(--red); margin-bottom:8px; }
+.withdraw-blocked p { font-size:13px; color:var(--text2); line-height:1.5; }
+
+.page-header { padding:16px 16px 8px; }
+.page-header h2 { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; }
+.page-header p { font-size:13px; color:var(--text2); margin-top:4px; }
+
+.loading {
+  display:flex; align-items:center; justify-content:center; min-height:100vh;
+  flex-direction:column; gap:16px;
+}
+.loading-spinner {
+  width:48px; height:48px; border:3px solid var(--dark3);
+  border-top-color:var(--blue); border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading p { color:var(--text2); font-size:14px; }
+</style>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loading-screen" class="screen active">
+  <div class="loading">
+    <div class="loading-spinner"></div>
+    <p>Loading ProfitCash...</p>
+  </div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div id="login-screen" class="screen">
+  <div class="auth-wrap">
+    <div class="logo-area">
+      <div class="logo-icon">💰</div>
+      <div class="logo-name">Profit<span>Cash</span></div>
+      <div class="logo-tag">Earn Daily. Grow Daily.</div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-title">Welcome Back 👋</div>
+      <div class="auth-sub">Login to your account</div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" id="login-email" type="email" placeholder="your@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" id="login-password" type="password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()">🚀 Login</button>
+      <div style="text-align:center;margin-top:12px;">
+        <a onclick="showForgot()" style="color:var(--text2);font-size:13px;cursor:pointer;">Forgot Password?</a>
+      </div>
+      <div class="auth-switch">Don't have an account? <a onclick="showScreen('register')">Register Now</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REGISTER ===== -->
+<div id="register-screen" class="screen">
+  <div class="auth-wrap">
+    <div class="logo-area">
+      <div class="logo-icon">💰</div>
+      <div class="logo-name">Profit<span>Cash</span></div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-title">Create Account ✨</div>
+      <div class="auth-sub">Join thousands of earners</div>
+      <div id="ref-autofill" class="ref-note" style="display:none">🔗 Referral code auto-filled!</div>
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" id="reg-name" type="text" placeholder="Your Full Name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" id="reg-email" type="email" placeholder="your@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input class="form-input" id="reg-phone" type="tel" placeholder="+92 300 0000000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" id="reg-password" type="password" placeholder="Minimum 6 characters">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Referral Code (Optional)</label>
+        <input class="form-input" id="reg-ref" type="text" placeholder="Enter referral code">
+      </div>
+      <button class="btn btn-primary" onclick="doRegister()">✅ Create Account</button>
+      <div class="auth-switch">Already have an account? <a onclick="showScreen('login')">Login</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FORGOT PASSWORD ===== -->
+<div id="forgot-screen" class="screen">
+  <div class="auth-wrap">
+    <div class="logo-area">
+      <div class="logo-icon">🔐</div>
+      <div class="logo-name">Profit<span>Cash</span></div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-title">Reset Password 🔑</div>
+      <div class="auth-sub">Enter your email to reset password</div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" id="forgot-email" type="email" placeholder="your@email.com">
+      </div>
+      <button class="btn btn-primary" onclick="doForgot()">📧 Send Reset Link</button>
+      <div class="auth-switch"><a onclick="showScreen('login')">← Back to Login</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP SHELL ===== -->
+<div id="app-shell">
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-logo">Profit<span>Cash</span></div>
+    <div style="display:flex;gap:8px;">
+      <div class="icon-btn" onclick="showNotif()">🔔</div>
+      <div class="icon-btn" onclick="doLogout()">🚪</div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+
+    <!-- HOME TAB -->
+    <div id="tab-home" class="tab-content">
+      <div class="home-hero">
+        <div class="user-greet">Good Day,</div>
+        <div class="user-name-big" id="home-username">User</div>
+        <!-- Balance Card -->
+        <div class="balance-card">
+          <div class="balance-label">💎 Total Balance</div>
+          <div class="balance-amount"><span class="currency">Rs </span><span id="home-total-bal">0</span></div>
+          <div class="balance-row">
+            <div class="balance-mini">
+              <div class="balance-mini-label">💰 Deposit</div>
+              <div class="balance-mini-val">Rs <span id="home-dep-bal">0</span></div>
+            </div>
+            <div class="balance-mini">
+              <div class="balance-mini-label">💵 Current</div>
+              <div class="balance-mini-val">Rs <span id="home-cur-bal">0</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card c-green">
+          <div class="stat-icon">📈</div>
+          <div class="stat-label">Daily Earning</div>
+          <div class="stat-val green earn-badge">Rs <span id="home-daily">0</span></div>
+        </div>
+        <div class="stat-card c-blue">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-label">Active Plan</div>
+          <div class="stat-val blue" id="home-plan">None</div>
+        </div>
+        <div class="stat-card c-gold">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-label">Plan Expiry</div>
+          <div class="stat-val gold" id="home-expiry" style="font-size:14px;">—</div>
+        </div>
+        <div class="stat-card c-cyan">
+          <div class="stat-icon">👥</div>
+          <div class="stat-label">Referrals</div>
+          <div class="stat-val cyan" id="home-refs">0</div>
+        </div>
+        <div class="stat-card c-purple">
+          <div class="stat-icon">💎</div>
+          <div class="stat-label">Ref. Commission</div>
+          <div class="stat-val purple">Rs <span id="home-ref-comm">0</span></div>
+        </div>
+        <div class="stat-card c-red">
+          <div class="stat-icon">📊</div>
+          <div class="stat-label">Withdrawals</div>
+          <div class="stat-val red" id="home-withdrawals">0</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="section-title"><div class="dot"></div>Quick Actions</div>
+      <div class="quick-actions">
+        <div class="quick-btn" onclick="switchTab('deposit')"><div class="qb-icon">💳</div><div class="qb-label">Deposit</div></div>
+        <div class="quick-btn" onclick="switchTab('withdraw')"><div class="qb-icon">💸</div><div class="qb-label">Withdraw</div></div>
+        <div class="quick-btn" onclick="switchTab('plans')"><div class="qb-icon">📋</div><div class="qb-label">Plans</div></div>
+        <div class="quick-btn" onclick="switchTab('tasks')"><div class="qb-icon">✅</div><div class="qb-label">Tasks</div></div>
+        <div class="quick-btn" onclick="switchTab('referral')"><div class="qb-icon">👥</div><div class="qb-label">Referral</div></div>
+      </div>
+
+      <!-- Support -->
+      <div class="support-banner">
+        <a href="https://whatsapp.com/channel/0029Vb7PFe98V0tw1OADlX1r" target="_blank">
+          <div class="support-icon">💬</div>
+          <div class="support-text">
+            <h4>📢 Join Our WhatsApp Channel</h4>
+            <p>Updates, tips & support — all in one place</p>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- PLANS TAB -->
+    <div id="tab-plans" class="tab-content" style="display:none">
+      <div class="page-header">
+        <h2>Investment Plans 📋</h2>
+        <p>Purchase a plan to start earning daily</p>
+      </div>
+      <div class="plans-list" id="plans-list"></div>
+    </div>
+
+    <!-- TASKS TAB -->
+    <div id="tab-tasks" class="tab-content" style="display:none">
+      <div class="page-header">
+        <h2>Daily Tasks ✅</h2>
+        <p>Complete tasks to earn your daily reward</p>
+      </div>
+      <div id="tasks-content"></div>
+    </div>
+
+    <!-- DEPOSIT TAB -->
+    <div id="tab-deposit" class="tab-content" style="display:none">
+      <div class="page-header">
+        <h2>Deposit Funds 💳</h2>
+      </div>
+      <div class="dep-page">
+        <div class="pay-info-card">
+          <div class="pay-info-title">🏦 Payment Details</div>
+          <div class="pay-info-row">
+            <span class="pay-info-label">Bank</span>
+            <span class="pay-info-val">JazzCash (Mobilink)</span>
+          </div>
+          <div class="pay-info-row">
+            <span class="pay-info-label">Account Name</span>
+            <span class="pay-info-val">ProfitCash Admin</span>
+          </div>
+          <div class="pay-info-row">
+            <span class="pay-info-label">IBAN</span>
+            <span class="pay-info-val" style="font-size:11px;">PK50JCMA1310923027527798</span>
+          </div>
+          <button class="copy-btn" style="margin-top:8px;" onclick="copyIBAN()">📋 Copy IBAN</button>
+        </div>
+        <div class="min-dep-note">⚠️ Minimum deposit: <strong>Rs 550</strong></div>
+
+        <div class="form-group">
+          <label class="form-label">Your Account Holder Name</label>
+          <input class="form-input" id="dep-name" type="text" placeholder="Your full name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Account Number</label>
+          <input class="form-input" id="dep-acc" type="text" placeholder="03XX-XXXXXXX">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Transaction ID</label>
+          <input class="form-input" id="dep-txn" type="text" placeholder="TXN12345XXXX">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount Sent (Rs)</label>
+          <input class="form-input" id="dep-amount" type="number" placeholder="550">
+        </div>
+        <button class="btn btn-green" onclick="submitDeposit()" style="margin-top:4px;">💳 Submit Deposit Request</button>
+
+        <div class="divider"></div>
+        <div class="section-title"><div class="dot"></div>Deposit History</div>
+        <div id="dep-history" class="dep-history-list"></div>
+      </div>
+    </div>
+
+    <!-- WITHDRAW TAB -->
+    <div id="tab-withdraw" class="tab-content" style="display:none">
+      <div class="page-header">
+        <h2>Withdraw Funds 💸</h2>
+      </div>
+      <div class="withdraw-page">
+        <div id="withdraw-main-content"></div>
+      </div>
+    </div>
+
+    <!-- REFERRAL TAB -->
+    <div id="tab-referral" class="tab-content" style="display:none">
+      <div class="page-header">
+        <h2>Referral System 👥</h2>
+      </div>
+      <div class="ref-page">
+        <div class="ref-hero">
+          <div class="ref-big-icon">🎁</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;">Invite & Earn</div>
+          <div style="font-size:13px;color:var(--text2);margin:6px 0 14px;">Share your code. Earn up to 10% commission!</div>
+          <div class="ref-code-box">
+            <span class="ref-code" id="ref-code-display">PCXXXXXX</span>
+            <button class="copy-btn" onclick="copyRefCode()">📋 Copy</button>
+          </div>
+        </div>
+
+        <!-- Ref Stats -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+          <div class="stat-card c-blue" style="text-align:center;">
+            <div class="stat-icon">👥</div>
+            <div class="stat-label">Total Refs</div>
+            <div class="stat-val blue" id="ref-total">0</div>
+          </div>
+          <div class="stat-card c-green" style="text-align:center;">
+            <div class="stat-icon">✅</div>
+            <div class="stat-label">Active</div>
+            <div class="stat-val green" id="ref-active">0</div>
+          </div>
+          <div class="stat-card c-gold" style="text-align:center;">
+            <div class="stat-icon">💰</div>
+            <div class="stat-label">Earned</div>
+            <div class="stat-val gold" style="font-size:14px;">Rs<span id="ref-earned">0</span></div>
+          </div>
+        </div>
+
+        <!-- Ref Link -->
+        <div class="ref-link-box">
+          <div class="ref-link-label">🔗 Your Referral Link</div>
+          <div class="ref-link" id="ref-link-display"></div>
+          <button class="btn btn-primary btn-sm" onclick="shareRefLink()">📤 Share Link</button>
+        </div>
+
+        <!-- Commission Levels -->
+        <div class="section-title"><div class="dot"></div>Commission Structure</div>
+        <div class="ref-levels">
+          <div class="ref-level-card">
+            <div class="ref-level-left">
+              <div class="ref-level-badge lvl1">L1</div>
+              <div class="ref-level-info">
+                <h4>Level 1 Direct</h4>
+                <p>5 Members — One time on activation</p>
+              </div>
+            </div>
+            <div class="ref-level-pct">10%</div>
+          </div>
+          <div class="ref-level-card">
+            <div class="ref-level-left">
+              <div class="ref-level-badge lvl2">L2</div>
+              <div class="ref-level-info">
+                <h4>Level 2 Network</h4>
+                <p>15 Members — One time on activation</p>
+              </div>
+            </div>
+            <div class="ref-level-pct">6%</div>
+          </div>
+          <div class="ref-level-card">
+            <div class="ref-level-left">
+              <div class="ref-level-badge lvl3">L3</div>
+              <div class="ref-level-info">
+                <h4>Level 3 Extended</h4>
+                <p>35 Members — One time on activation</p>
+              </div>
+            </div>
+            <div class="ref-level-pct">3%</div>
+          </div>
+        </div>
+
+        <!-- Referred Users -->
+        <div class="section-title"><div class="dot"></div>My Referrals</div>
+        <div id="ref-users-list">
+          <div class="empty-state"><div class="es-icon">👥</div><p>No referrals yet. Share your code!</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE TAB -->
+    <div id="tab-profile" class="tab-content" style="display:none">
+      <div class="profile-page">
+        <div class="profile-header">
+          <div class="avatar" id="profile-avatar">U</div>
+          <div class="profile-name" id="profile-name">Username</div>
+          <div class="profile-email" id="profile-email">email@example.com</div>
+          <div class="profile-badge">📱 <span id="profile-phone">+92 300 0000000</span></div>
+        </div>
+
+        <div class="profile-menu">
+          <div class="menu-item" onclick="switchTab('deposit')">
+            <div class="menu-icon mi-green">💳</div>
+            <div class="menu-text"><h4>Deposit Funds</h4><p>Add money to your account</p></div>
+            <div class="menu-arrow">›</div>
+          </div>
+          <div class="menu-item" onclick="switchTab('withdraw')">
+            <div class="menu-icon mi-blue">💸</div>
+            <div class="menu-text"><h4>Withdraw Funds</h4><p>Cash out your earnings</p></div>
+            <div class="menu-arrow">›</div>
+          </div>
+          <div class="menu-item" onclick="switchTab('plans')">
+            <div class="menu-icon mi-gold">📋</div>
+            <div class="menu-text"><h4>Investment Plans</h4><p>Upgrade your earnings</p></div>
+            <div class="menu-arrow">›</div>
+          </div>
+          <div class="menu-item" onclick="switchTab('referral')">
+            <div class="menu-icon mi-blue">👥</div>
+            <div class="menu-text"><h4>Referral System</h4><p>Invite friends and earn</p></div>
+            <div class="menu-arrow">›</div>
+          </div>
+          <div class="menu-item" style="cursor:pointer;" onclick="openChangePass()">
+            <div class="menu-icon mi-red">🔐</div>
+            <div class="menu-text"><h4>Change Password</h4><p>Update your account password</p></div>
+            <div class="menu-arrow">›</div>
+          </div>
+          <div class="menu-item" onclick="doLogout()">
+            <div class="menu-icon mi-red">🚪</div>
+            <div class="menu-text"><h4>Logout</h4><p>Sign out of your account</p></div>
+            <div class="menu-arrow">›</div>
+          </div>
+        </div>
+
+        <div style="text-align:center;padding:8px;color:var(--text3);font-size:12px;">ProfitCash v1.0 — Earn Daily. Grow Daily.</div>
+      </div>
+    </div>
+
+    <!-- ADMIN TAB -->
+    <div id="tab-admin" class="tab-content" style="display:none">
+      <div class="admin-wrap">
+        <div class="admin-hero">
+          <div class="admin-avatar">⚙️</div>
+          <div>
+            <div class="admin-title">Admin Panel</div>
+            <div class="admin-sub">ProfitCash Management</div>
+          </div>
+        </div>
+
+        <!-- Admin Stats -->
+        <div class="admin-stats" id="admin-stats-grid"></div>
+
+        <!-- Admin Tabs -->
+        <div class="admin-tabs">
+          <div class="admin-tab active" onclick="switchAdminTab('deposits')">💳 Deposits</div>
+          <div class="admin-tab" onclick="switchAdminTab('withdrawals')">💸 Withdrawals</div>
+          <div class="admin-tab" onclick="switchAdminTab('users')">👥 Users</div>
+          <div class="admin-tab" onclick="switchAdminTab('plans')">📋 Plans</div>
+        </div>
+
+        <div id="admin-deposits" class="admin-section active"></div>
+        <div id="admin-withdrawals" class="admin-section"></div>
+        <div id="admin-users" class="admin-section"></div>
+        <div id="admin-plans-section" class="admin-section"></div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav" id="bottom-nav">
+    <div class="nav-item active" id="nav-home" onclick="switchTab('home')">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-item" id="nav-plans" onclick="switchTab('plans')">
+      <div class="nav-icon">📋</div>
+      <div class="nav-label">Plans</div>
+    </div>
+    <div class="nav-item" id="nav-tasks" onclick="switchTab('tasks')">
+      <div class="nav-icon">✅</div>
+      <div class="nav-label">Tasks</div>
+    </div>
+    <div class="nav-item" id="nav-referral" onclick="switchTab('referral')">
+      <div class="nav-icon">👥</div>
+      <div class="nav-label">Refer</div>
+    </div>
+    <div class="nav-item" id="nav-profile" onclick="switchTab('profile')">
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">Profile</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Plan Purchase Modal -->
+<div class="modal-overlay" id="plan-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-plan-title">Buy Plan</div>
+      <div class="modal-close" onclick="closeModal('plan-modal')">✕</div>
+    </div>
+    <div id="modal-plan-body"></div>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal-overlay" id="change-pass-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Change Password 🔐</div>
+      <div class="modal-close" onclick="closeModal('change-pass-modal')">✕</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Current Password</label>
+      <input class="form-input" id="old-pass" type="password" placeholder="Current password">
+    </div>
+    <div class="form-group">
+      <label class="form-label">New Password</label>
+      <input class="form-input" id="new-pass" type="password" placeholder="New password">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Confirm New Password</label>
+      <input class="form-input" id="confirm-pass" type="password" placeholder="Confirm new password">
+    </div>
+    <button class="btn btn-primary" onclick="changePassword()">🔐 Update Password</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  FIREBASE CONFIGURATION
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyAw6LEGgRuYU3OG0LF-L6JA4P_kO7O8BTw",
+  authDomain: "earn-tasks-8e759.firebaseapp.com",
+  databaseURL: "https://earn-tasks-8e759-default-rtdb.firebaseio.com",
+  projectId: "earn-tasks-8e759",
+  storageBucket: "earn-tasks-8e759.firebasestorage.app",
+  messagingSenderId: "925064488956",
+  appId: "1:925064488956:web:a78937e77cd53449523479"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const database = firebase.database();
+
+// ============================================================
+//  DATA
+// ============================================================
+const PLANS = [
+  { id:1, name:'Starter Plan',   invest:550,   daily:85,   total:2550,  profit:2000,  days:30 },
+  { id:2, name:'Basic Plan',     invest:1000,  daily:150,  total:4500,  profit:3500,  days:30 },
+  { id:3, name:'Silver Plan',    invest:2000,  daily:300,  total:9000,  profit:7000,  days:30 },
+  { id:4, name:'Gold Plan',      invest:3000,  daily:450,  total:13500, profit:10500, days:30 },
+  { id:5, name:'Premium Plan',   invest:5000,  daily:750,  total:22500, profit:17500, days:30 },
+  { id:6, name:'Elite Plan',     invest:10000, daily:1500, total:45000, profit:35000, days:30 },
+  { id:7, name:'Diamond Plan',   invest:20000, daily:3000, total:90000, profit:70000, days:30 },
+];
+
+const TASK_TEMPLATES = [
+  { title:'Watch Advertisement', desc:'Watch a 30-second ad to claim your reward.', icon:'📺' },
+  { title:'Rate Our App', desc:'Leave a 5-star rating on the store to support us.', icon:'⭐' },
+  { title:'Share on Social Media', desc:'Share your referral link on any social platform.', icon:'📤' },
+  { title:'Complete Profile', desc:'Ensure your profile details are up to date.', icon:'👤' },
+];
+
+// Admin credentials
+const ADMIN_EMAIL = 'business236670@gmail.com';
+const ADMIN_PASS  = 'Shamas157884';
+
+let currentUser = null;
+let currentUserData = null;
+let isAdmin = false;
+
+// ============================================================
+//  UTILS
+// ============================================================
+const fmt = (n) => Math.floor(n || 0).toLocaleString();
+const today = () => new Date().toISOString().split('T')[0];
+const addDays = (d, n) => {
+  const dt = new Date(d);
+  dt.setDate(dt.getDate() + n);
+  return dt.toISOString().split('T')[0];
+};
+const genCode = () => 'PC' + Math.random().toString(36).substr(2,6).toUpperCase();
+
+function showToast(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ============================================================
+//  SCREENS
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id + '-screen').classList.add('active');
+  document.getElementById('app-shell').classList.remove('active');
+}
+
+function showApp() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('app-shell').classList.add('active');
+  if (!isAdmin) {
+    switchTab('home');
+  } else {
+    document.getElementById('bottom-nav').style.display = 'none';
+    switchTab('admin');
+  }
+}
+
+function showForgot() { showScreen('forgot'); }
+
+// ============================================================
+//  AUTH
+// ============================================================
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('login-password').value;
+  
+  if (!email || !pass) { showToast('⚠️ Please fill all fields', 'error'); return; }
+
+  // Admin check
+  if (email === ADMIN_EMAIL.toLowerCase() && pass === ADMIN_PASS) {
+    isAdmin = true;
+    showApp();
+    switchTab('admin');
+    return;
+  }
+
+  auth.signInWithEmailAndPassword(email, pass)
+    .then((userCredential) => {
+      currentUser = userCredential.user;
+      loadUserData();
+      showToast('✅ Welcome back!', 'success');
+    })
+    .catch((error) => {
+      showToast('❌ ' + error.message, 'error');
+    });
+}
+
+function doRegister() {
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const pass  = document.getElementById('reg-password').value;
+  const ref   = document.getElementById('reg-ref').value.trim().toUpperCase();
+
+  if (!name || !email || !phone || !pass) { showToast('⚠️ Please fill all required fields', 'error'); return; }
+  if (pass.length < 6) { showToast('⚠️ Password must be 6+ characters', 'error'); return; }
+
+  // Find referrer
+  let referredBy = null;
+  if (ref) {
+    database.ref('users').once('value').then((snapshot) => {
+      const users = snapshot.val() || {};
+      const referrer = Object.values(users).find(u => u.refCode === ref);
+      if (referrer) { referredBy = referrer.email; }
+    });
+  }
+
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then((userCredential) => {
+      currentUser = userCredential.user;
+      
+      const newUser = {
+        uid: currentUser.uid,
+        email, name, phone,
+        refCode: genCode(),
+        referredBy,
+        depositBalance: 0,
+        currentBalance: 0,
+        totalWithdrawals: 0,
+        activePlan: null,
+        planExpiry: null,
+        planActivatedOn: null,
+        blocked: false,
+        createdAt: today(),
+        tasksDate: null,
+        tasksCompleted: [],
+        taskEarnedToday: 0,
+        activeReferrals: 0,
+        refCommission: 0,
+        referrals: [],
+        unlimitedWithdrawals: false,
+      };
+
+      database.ref('users/' + currentUser.uid).set(newUser).then(() => {
+        // Update referrer's referral list
+        if (referredBy) {
+          database.ref('users').once('value').then((snapshot) => {
+            const users = snapshot.val() || {};
+            const referrerKey = Object.keys(users).find(key => users[key].email === referredBy);
+            if (referrerKey) {
+              const refs = users[referrerKey].referrals || [];
+              refs.push({ email, level: 1 });
+              database.ref('users/' + referrerKey).update({ referrals: refs });
+            }
+          });
+        }
+        
+        currentUserData = newUser;
+        showToast('✅ Account created!', 'success');
+        showApp();
+      });
+    })
+    .catch((error) => {
+      showToast('❌ ' + error.message, 'error');
+    });
+}
+
+function doForgot() {
+  const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+  if (!email) { showToast('⚠️ Enter your email', 'error'); return; }
+  
+  auth.sendPasswordResetEmail(email)
+    .then(() => {
+      showToast('📧 Password reset link sent!', 'success');
+      setTimeout(() => showScreen('login'), 2000);
+    })
+    .catch((error) => {
+      showToast('❌ ' + error.message, 'error');
+    });
+}
+
+function doLogout() {
+  auth.signOut().then(() => {
+    currentUser = null;
+    currentUserData = null;
+    isAdmin = false;
+    showScreen('login');
+    document.getElementById('bottom-nav').style.display = 'flex';
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-password').value = '';
+  });
+}
+
+function loadUserData() {
+  if (!currentUser) return;
+  
+  database.ref('users/' + currentUser.uid).once('value').then((snapshot) => {
+    if (snapshot.exists()) {
+      currentUserData = snapshot.val();
+      if (currentUserData.blocked) {
+        showToast('🚫 Your account is blocked', 'error');
+        doLogout();
+        return;
+      }
+      checkPlanExpiry();
+      showApp();
+    }
+  });
+}
+
+// ============================================================
+//  TABS
+// ============================================================
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  document.getElementById('tab-' + tab).style.display = 'block';
+
+  const navMap = { home:'nav-home', plans:'nav-plans', tasks:'nav-tasks', referral:'nav-referral', profile:'nav-profile' };
+  if (navMap[tab]) document.getElementById(navMap[tab]).classList.add('active');
+
+  if (tab === 'home') updateDashboard();
+  if (tab === 'plans') renderPlans();
+  if (tab === 'tasks') renderTasks();
+  if (tab === 'deposit') renderDepositHistory();
+  if (tab === 'withdraw') renderWithdraw();
+  if (tab === 'referral') renderReferral();
+  if (tab === 'profile') renderProfile();
+  if (tab === 'admin') renderAdmin();
+}
+
+// ============================================================
+//  DASHBOARD
+// ============================================================
+function checkPlanExpiry() {
+  if (!currentUserData) return;
+  if (currentUserData.activePlan && currentUserData.planExpiry && currentUserData.planExpiry < today()) {
+    database.ref('users/' + currentUser.uid).update({
+      activePlan: null,
+      planExpiry: null,
+      planActivatedOn: null
+    });
+    currentUserData.activePlan = null;
+    currentUserData.planExpiry = null;
+    currentUserData.planActivatedOn = null;
+  }
+}
+
+function updateDashboard() {
+  if (!currentUserData) return;
+  checkPlanExpiry();
+
+  const plan = currentUserData.activePlan ? PLANS.find(p => p.id === currentUserData.activePlan) : null;
+  const total = (currentUserData.depositBalance || 0) + (currentUserData.currentBalance || 0);
+
+  document.getElementById('home-username').textContent = currentUserData.name.split(' ')[0];
+  document.getElementById('home-total-bal').textContent = fmt(total);
+  document.getElementById('home-dep-bal').textContent = fmt(currentUserData.depositBalance || 0);
+  document.getElementById('home-cur-bal').textContent = fmt(currentUserData.currentBalance || 0);
+  document.getElementById('home-daily').textContent = plan ? fmt(plan.daily) : '0';
+  document.getElementById('home-plan').textContent = plan ? plan.name : 'None';
+  document.getElementById('home-expiry').textContent = currentUserData.planExpiry || '—';
+  document.getElementById('home-refs').textContent = (currentUserData.referrals || []).length;
+  document.getElementById('home-ref-comm').textContent = fmt(currentUserData.refCommission || 0);
+  document.getElementById('home-withdrawals').textContent = currentUserData.totalWithdrawals || 0;
+}
+
+// ============================================================
+//  PLANS
+// ============================================================
+function renderPlans() {
+  if (!currentUserData) return;
+  checkPlanExpiry();
+
+  const list = document.getElementById('plans-list');
+  list.innerHTML = PLANS.map(p => {
+    const isActive = currentUserData.activePlan === p.id;
+    return `
+    <div class="plan-card ${isActive ? 'active-plan' : ''}">
+      <div class="plan-header">
+        <div>
+          <div class="plan-name">${p.name}</div>
+          <div class="plan-invest">Investment: <span>Rs ${fmt(p.invest)}</span></div>
+        </div>
+        <div style="font-size:28px;">💎</div>
+      </div>
+      <div class="plan-body">
+        <div class="plan-grid">
+          <div class="plan-stat">
+            <div class="plan-stat-label">Daily Earn</div>
+            <div class="plan-stat-val" style="color:var(--green)">Rs ${fmt(p.daily)}</div>
+          </div>
+          <div class="plan-stat">
+            <div class="plan-stat-label">Duration</div>
+            <div class="plan-stat-val">${p.days} Days</div>
+          </div>
+          <div class="plan-stat">
+            <div class="plan-stat-label">Total Return</div>
+            <div class="plan-stat-val" style="color:var(--cyan)">Rs ${fmt(p.total)}</div>
+          </div>
+          <div class="plan-stat">
+            <div class="plan-stat-label">Net Profit</div>
+            <div class="plan-stat-val" style="color:var(--gold)">Rs ${fmt(p.profit)}</div>
+          </div>
+        </div>
+        ${isActive
+          ? `<div style="text-align:center;color:var(--green);font-weight:700;padding:8px;background:rgba(0,200,83,0.1);border-radius:10px;">✅ Active — Expires: ${currentUserData.planExpiry}</div>`
+          : `<button class="btn btn-primary" onclick="buyPlan(${p.id})">🛒 Purchase Plan</button>`
+        }
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let selectedPlanId = null;
+
+function buyPlan(planId) {
+  const plan = PLANS.find(p => p.id === planId);
+  if (!plan) return;
+
+  if (currentUserData.activePlan) {
+    showToast('⚠️ You already have an active plan', 'error'); return;
+  }
+  if ((currentUserData.depositBalance || 0) < plan.invest) {
+    document.getElementById('modal-plan-title').textContent = plan.name;
+    document.getElementById('modal-plan-body').innerHTML = `
+      <div style="text-align:center;padding:12px;">
+        <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
+        <h3 style="margin-bottom:8px;">Insufficient Balance</h3>
+        <p style="color:var(--text2);font-size:14px;margin-bottom:16px;">You need <strong style="color:var(--gold)">Rs ${fmt(plan.invest)}</strong> deposit balance.<br>Your balance: <strong style="color:var(--red)">Rs ${fmt(currentUserData.depositBalance||0)}</strong></p>
+        <button class="btn btn-primary" onclick="closeModal('plan-modal');switchTab('deposit')">💳 Make Deposit</button>
+      </div>`;
+    openModal('plan-modal');
+    return;
+  }
+
+  selectedPlanId = planId;
+  document.getElementById('modal-plan-title').textContent = plan.name;
+  document.getElementById('modal-plan-body').innerHTML = `
+    <div style="background:var(--dark2);border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="color:var(--text2)">Investment</span><strong style="color:var(--gold)">Rs ${fmt(plan.invest)}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="color:var(--text2)">Daily Earning</span><strong style="color:var(--green)">Rs ${fmt(plan.daily)}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="color:var(--text2)">Duration</span><strong>${plan.days} Days</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text2)">Total Return</span><strong style="color:var(--cyan)">Rs ${fmt(plan.total)}</strong>
+      </div>
+    </div>
+    <div style="color:var(--text2);font-size:13px;margin-bottom:16px;">Rs ${fmt(plan.invest)} will be deducted from your Deposit Balance.</div>
+    <button class="btn btn-green" onclick="confirmBuyPlan()">✅ Confirm Purchase</button>
+    <button class="btn btn-outline" onclick="closeModal('plan-modal')" style="margin-top:8px;">Cancel</button>`;
+  openModal('plan-modal');
+}
+
+function confirmBuyPlan() {
+  const plan = PLANS.find(p => p.id === selectedPlanId);
+  if (!plan || (currentUserData.depositBalance || 0) < plan.invest) return;
+
+  const updates = {
+    depositBalance: currentUserData.depositBalance - plan.invest,
+    activePlan: selectedPlanId,
+    planActivatedOn: today(),
+    planExpiry: addDays(today(), plan.days),
+    tasksDate: null,
+    tasksCompleted: [],
+    taskEarnedToday: 0,
+  };
+
+  database.ref('users/' + currentUser.uid).update(updates).then(() => {
+    currentUserData = { ...currentUserData, ...updates };
+    processRefCommission(currentUserData.email, plan.invest);
+    closeModal('plan-modal');
+    showToast('🎉 Plan activated successfully!', 'success');
+    renderPlans();
+    updateDashboard();
+  });
+}
+
+function processRefCommission(userEmail, amount) {
+  database.ref('users').once('value').then((snapshot) => {
+    const users = snapshot.val() || {};
+    const userKey = Object.keys(users).find(key => users[key].email === userEmail);
+    if (!userKey) return;
+    
+    const userData = users[userKey];
+    if (!userData.referredBy) return;
+    
+    const levels = [
+      { pct: 0.10, maxMembers: 5 },
+      { pct: 0.06, maxMembers: 15 },
+      { pct: 0.03, maxMembers: 35 },
+    ];
+    
+    let currentEmail = userData.referredBy;
+    for (let lvl = 0; lvl < levels.length; lvl++) {
+      if (!currentEmail) break;
+      
+      const referrerKey = Object.keys(users).find(key => users[key].email === currentEmail);
+      if (!referrerKey) break;
+      
+      const referrer = users[referrerKey];
+      const comm = amount * levels[lvl].pct;
+      
+      database.ref('users/' + referrerKey).update({
+        currentBalance: (referrer.currentBalance || 0) + comm,
+        refCommission: (referrer.refCommission || 0) + comm,
+        activeReferrals: (referrer.activeReferrals || 0) + 1,
+      });
+      
+      currentEmail = referrer.referredBy;
+    }
+  });
+}
+
+// ============================================================
+//  TASKS
+// ============================================================
+function renderTasks() {
+  const content = document.getElementById('tasks-content');
+
+  if (!currentUserData.activePlan) {
+    content.innerHTML = `
+    <div class="task-no-plan">
+      <div class="icon">📋</div>
+      <h3>No Active Plan</h3>
+      <p>You need to purchase an investment plan to unlock daily tasks and start earning.</p>
+      <button class="btn btn-primary" style="margin-top:16px;width:auto;padding:12px 24px;" onclick="switchTab('plans')">Browse Plans</button>
+    </div>`;
+    return;
+  }
+
+  checkPlanExpiry();
+  if (!currentUserData.activePlan) { 
+    content.innerHTML = '<div class="empty-state"><div class="es-icon">⏰</div><p>Plan expired. Purchase a new plan.</p></div>'; 
+    return; 
+  }
+
+  const plan = PLANS.find(p => p.id === currentUserData.activePlan);
+  const todayStr = today();
+
+  // Reset tasks if new day
+  if (currentUserData.tasksDate !== todayStr) {
+    database.ref('users/' + currentUser.uid).update({
+      tasksDate: todayStr,
+      tasksCompleted: [],
+      taskEarnedToday: 0
+    });
+    currentUserData.tasksDate = todayStr;
+    currentUserData.tasksCompleted = [];
+    currentUserData.taskEarnedToday = 0;
+  }
+
+  const numTasks = 4;
+  const perTask = Math.floor(plan.daily / numTasks);
+  const tasks = TASK_TEMPLATES.slice(0, numTasks);
+  const completed = currentUserData.tasksCompleted || [];
+  const doneCount = completed.length;
+  const earnedToday = currentUserData.taskEarnedToday || 0;
+
+  content.innerHTML = `
+  <div class="tasks-header">
+    <div class="tasks-progress-wrap">
+      <div class="tasks-progress-label">
+        <span>Tasks Completed</span>
+        <span style="font-weight:700;color:var(--cyan)">${doneCount}/${numTasks}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${(doneCount/numTasks)*100}%"></div></div>
+      <div class="tasks-earning-info">
+        <div class="tei"><div class="tei-val">Rs ${fmt(earnedToday)}</div><div class="tei-label">Earned Today</div></div>
+        <div class="tei"><div class="tei-val">Rs ${fmt(plan.daily - earnedToday)}</div><div class="tei-label">Remaining</div></div>
+        <div class="tei"><div class="tei-val">Rs ${fmt(plan.daily)}</div><div class="tei-label">Daily Total</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="tasks-list">
+    ${tasks.map((t, i) => {
+      const done = completed.includes(i);
+      return `
+      <div class="task-item ${done ? 'done' : ''}" id="task-item-${i}">
+        <div class="task-num">${i+1}</div>
+        <div class="task-info">
+          <div class="task-title">${t.icon} ${t.title}</div>
+          <div class="task-desc">${t.desc}</div>
+          <div class="task-reward">+Rs ${fmt(perTask)}</div>
+          ${!done ? `<div class="task-actions"><button class="btn btn-primary btn-sm" onclick="startTask(${i})">▶ Start</button></div>` : ''}
+        </div>
+        <div class="task-check">${done ? '✅' : '⭕'}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function startTask(idx) {
+  if (currentUserData.tasksCompleted.includes(idx)) { showToast('Already completed!', 'info'); return; }
+  const plan = PLANS.find(p => p.id === currentUserData.activePlan);
+  const numTasks = 4;
+  const perTask = Math.floor(plan.daily / numTasks);
+
+  showToast('⏳ Verifying task...', 'info');
+  setTimeout(() => {
+    const completed = [...currentUserData.tasksCompleted, idx];
+    const earnedToday = (currentUserData.taskEarnedToday || 0) + perTask;
+    
+    database.ref('users/' + currentUser.uid).update({
+      tasksCompleted: completed,
+      taskEarnedToday: earnedToday,
+      currentBalance: currentUserData.currentBalance + perTask,
+    }).then(() => {
+      currentUserData.tasksCompleted = completed;
+      currentUserData.taskEarnedToday = earnedToday;
+      currentUserData.currentBalance += perTask;
+      showToast(`✅ +Rs ${fmt(perTask)} added to balance!`, 'success');
+      renderTasks();
+      updateDashboard();
+    });
+  }, 1500);
+}
+
+// ============================================================
+//  DEPOSIT
+// ============================================================
+function submitDeposit() {
+  const name   = document.getElementById('dep-name').value.trim();
+  const acc    = document.getElementById('dep-acc').value.trim();
+  const txn    = document.getElementById('dep-txn').value.trim();
+  const amount = parseFloat(document.getElementById('dep-amount').value);
+
+  if (!name || !acc || !txn || !amount) { showToast('⚠️ Fill all fields', 'error'); return; }
+  if (amount < 550) { showToast('⚠️ Minimum deposit is Rs 550', 'error'); return; }
+
+  const deposit = {
+    id: 'DEP' + Date.now(),
+    userEmail: currentUserData.email,
+    userName: currentUserData.name,
+    accHolder: name,
+    accNumber: acc,
+    txnId: txn,
+    amount,
+    status: 'pending',
+    date: today(),
+  };
+
+  database.ref('deposits').push(deposit).then(() => {
+    document.getElementById('dep-name').value = '';
+    document.getElementById('dep-acc').value = '';
+    document.getElementById('dep-txn').value = '';
+    document.getElementById('dep-amount').value = '';
+    showToast('✅ Deposit request submitted!', 'success');
+    renderDepositHistory();
+  });
+}
+
+function renderDepositHistory() {
+  database.ref('deposits').once('value').then((snapshot) => {
+    const deps = [];
+    snapshot.forEach((child) => {
+      const d = child.val();
+      if (d.userEmail === currentUserData.email) deps.push(d);
+    });
+    deps.reverse();
+    
+    const el = document.getElementById('dep-history');
+    if (!deps.length) { 
+      el.innerHTML = '<div class="empty-state"><div class="es-icon">💳</div><p>No deposits yet</p></div>'; 
+      return; 
+    }
+    el.innerHTML = deps.map(d => `
+      <div class="history-item">
+        <div class="history-left">
+          <h4>Rs ${fmt(d.amount)}</h4>
+          <p>TXN: ${d.txnId} • ${d.date}</p>
+        </div>
+        <span class="status-badge badge-${d.status}">${d.status.toUpperCase()}</span>
+      </div>`).join('');
+  });
+}
+
+function copyIBAN() {
+  navigator.clipboard.writeText('PK50JCMA1310923027527798').then(() => showToast('📋 IBAN Copied!', 'success'));
+}
+
+// ============================================================
+//  WITHDRAW
+// ============================================================
+function renderWithdraw() {
+  const content = document.getElementById('withdraw-main-content');
+  
+  database.ref('withdrawals').once('value').then((snapshot) => {
+    const withdrawals = [];
+    snapshot.forEach((child) => {
+      const w = child.val();
+      if (w.userEmail === currentUserData.email) withdrawals.push(w);
+    });
+    
+    const approvedWithdrawals = withdrawals.filter(w => w.status === 'approved').length;
+    const needsReferral = approvedWithdrawals >= 2;
+    const activeRefs = currentUserData.activeReferrals || 0;
+
+    // First 2 withdrawals free, then each withdrawal needs 1 referral
+    if (needsReferral && activeRefs < 1) {
+      content.innerHTML = `
+      <div class="withdraw-blocked">
+        <div class="icon">🔒</div>
+        <h3>Referral Required</h3>
+        <p>You've used <strong>${approvedWithdrawals}</strong> free withdrawals. To continue withdrawing, you need <strong>1 active referral</strong> who has deposited and activated a plan.</p>
+        <p style="margin-top:10px;color:var(--red);font-weight:600;">Active Referrals: ${activeRefs}/1</p>
+      </div>
+      <div class="section-title"><div class="dot"></div>Withdrawal History</div>
+      ${renderWithdrawHistoryHTML(withdrawals)}`;
+      return;
+    }
+
+    content.innerHTML = `
+    <div class="form-group">
+      <label class="form-label">Withdraw Method</label>
+      <select class="form-input" id="wd-method">
+        <option value="">Select Method</option>
+        <option>JazzCash</option>
+        <option>Easypaisa</option>
+        <option>Upaisa</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Account Holder Name</label>
+      <input class="form-input" id="wd-holder" type="text" placeholder="Your full name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Account Number</label>
+      <input class="form-input" id="wd-acc" type="text" placeholder="03XX-XXXXXXX">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Amount (Rs)</label>
+      <input class="form-input" id="wd-amount" type="number" placeholder="Min Rs 85">
+    </div>
+    <div style="background:var(--dark2);border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--text2);">
+      Available Balance: <strong style="color:var(--cyan)">Rs ${fmt(currentUserData.currentBalance||0)}</strong>
+    </div>
+    <button class="btn btn-red" onclick="submitWithdraw()">💸 Submit Withdrawal</button>
+    <div class="divider"></div>
+    <div class="section-title"><div class="dot"></div>Withdrawal History</div>
+    ${renderWithdrawHistoryHTML(withdrawals)}`;
+  });
+}
+
+function renderWithdrawHistoryHTML(withdrawals) {
+  if (!withdrawals || !withdrawals.length) return '<div class="empty-state"><div class="es-icon">💸</div><p>No withdrawals yet</p></div>';
+  return withdrawals.reverse().map(w => `
+    <div class="history-item">
+      <div class="history-left">
+        <h4>Rs ${fmt(w.amount)} → ${w.method}</h4>
+        <p>${w.accNumber} • ${w.date}</p>
+      </div>
+      <span class="status-badge badge-${w.status}">${w.status.toUpperCase()}</span>
+    </div>`).join('');
+}
+
+function submitWithdraw() {
+  const method = document.getElementById('wd-method').value;
+  const holder = document.getElementById('wd-holder').value.trim();
+  const acc    = document.getElementById('wd-acc').value.trim();
+  const amount = parseFloat(document.getElementById('wd-amount').value);
+
+  if (!method || !holder || !acc || !amount) { showToast('⚠️ Fill all fields', 'error'); return; }
+  if (amount < 85) { showToast('⚠️ Minimum withdrawal is Rs 85', 'error'); return; }
+  if ((currentUserData.currentBalance || 0) < amount) { showToast('⚠️ Insufficient current balance', 'error'); return; }
+
+  const fee = amount * 0.06;
+  const netAmount = amount - fee;
+
+  // Get current approved withdrawals count
+  database.ref('withdrawals').once('value').then((snapshot) => {
+    const withdrawals = [];
+    snapshot.forEach((child) => {
+      const w = child.val();
+      if (w.userEmail === currentUserData.email) withdrawals.push(w);
+    });
+    
+    const approvedWithdrawals = withdrawals.filter(w => w.status === 'approved').length;
+    const needsReferralDeduction = approvedWithdrawals >= 2;
+
+    const updates = {
+      currentBalance: currentUserData.currentBalance - amount,
+    };
+
+    // Decrease active referral count if after first 2 withdrawals
+    if (needsReferralDeduction && currentUserData.activeReferrals > 0) {
+      updates.activeReferrals = currentUserData.activeReferrals - 1;
+    }
+
+    database.ref('users/' + currentUser.uid).update(updates).then(() => {
+      currentUserData.currentBalance -= amount;
+      if (needsReferralDeduction && currentUserData.activeReferrals > 0) {
+        currentUserData.activeReferrals -= 1;
+      }
+      
+      const withdrawal = {
+        id: 'WD' + Date.now(),
+        userEmail: currentUserData.email,
+        userName: currentUserData.name,
+        method, holder, accNumber: acc, amount: netAmount, feeDeducted: fee,
+        status: 'pending',
+        date: today(),
+      };
+
+      database.ref('withdrawals').push(withdrawal).then(() => {
+        showToast(`✅ Withdrawal of Rs ${fmt(netAmount)} submitted!`, 'success');
+        renderWithdraw();
+        updateDashboard();
+      });
+    });
+  });
+}
+
+// ============================================================
+//  REFERRAL
+// ============================================================
+function renderReferral() {
+  if (!currentUserData) return;
+
+  document.getElementById('ref-code-display').textContent = currentUserData.refCode;
+  document.getElementById('ref-link-display').textContent = window.location.origin + window.location.pathname + '?ref=' + currentUserData.refCode;
+  document.getElementById('ref-total').textContent = (currentUserData.referrals || []).length;
+  document.getElementById('ref-active').textContent = currentUserData.activeReferrals || 0;
+  document.getElementById('ref-earned').textContent = fmt(currentUserData.refCommission || 0);
+
+  const refList = document.getElementById('ref-users-list');
+  const refs = currentUserData.referrals || [];
+  if (!refs.length) {
+    refList.innerHTML = '<div class="empty-state"><div class="es-icon">👥</div><p>No referrals yet. Share your code!</p></div>';
+    return;
+  }
+  
+  database.ref('users').once('value').then((snapshot) => {
+    const users = snapshot.val() || {};
+    refList.innerHTML = refs.map(r => {
+      const ru = Object.values(users).find(u => u.email === r.email);
+      if (!ru) return '';
+      return `
+      <div class="history-item">
+        <div class="history-left">
+          <h4>${ru.name}</h4>
+          <p>${ru.email} • Joined ${ru.createdAt}</p>
+        </div>
+        <span class="status-badge ${ru.activePlan ? 'badge-approved' : 'badge-pending'}">${ru.activePlan ? 'ACTIVE' : 'PENDING'}</span>
+      </div>`;
+    }).join('');
+  });
+}
+
+function copyRefCode() {
+  navigator.clipboard.writeText(currentUserData.refCode).then(() => showToast('📋 Code Copied!', 'success'));
+}
+
+function shareRefLink() {
+  const link = window.location.origin + window.location.pathname + '?ref=' + currentUserData.refCode;
+  if (navigator.share) {
+    navigator.share({ title: 'Join ProfitCash', text: 'Use my referral code to join and earn daily!', url: link });
+  } else {
+    navigator.clipboard.writeText(link).then(() => showToast('🔗 Link Copied!', 'success'));
+  }
+}
+
+// ============================================================
+//  PROFILE
+// ============================================================
+function renderProfile() {
+  if (!currentUserData) return;
+  const initials = currentUserData.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('profile-avatar').textContent = initials;
+  document.getElementById('profile-name').textContent = currentUserData.name;
+  document.getElementById('profile-email').textContent = currentUserData.email;
+  document.getElementById('profile-phone').textContent = currentUserData.phone;
+}
+
+function openChangePass() { openModal('change-pass-modal'); }
+
+function changePassword() {
+  const old  = document.getElementById('old-pass').value;
+  const nw   = document.getElementById('new-pass').value;
+  const conf = document.getElementById('confirm-pass').value;
+
+  if (!old || !nw || !conf) { showToast('⚠️ Fill all fields', 'error'); return; }
+  if (nw.length < 6) { showToast('⚠️ New password must be 6+ chars', 'error'); return; }
+  if (nw !== conf) { showToast('❌ Passwords do not match', 'error'); return; }
+
+  const credential = firebase.auth.EmailAuthProvider.credential(currentUser.email, old);
+  currentUser.reauthenticateWithCredential(credential).then(() => {
+    currentUser.updatePassword(nw).then(() => {
+      closeModal('change-pass-modal');
+      showToast('✅ Password updated!', 'success');
+      document.getElementById('old-pass').value = '';
+      document.getElementById('new-pass').value = '';
+      document.getElementById('confirm-pass').value = '';
+    });
+  }).catch(() => {
+    showToast('❌ Current password is wrong', 'error');
+  });
+}
+
+// ============================================================
+//  ADMIN PANEL
+// ============================================================
+let allUsers = {};
+let allDeposits = {};
+let allWithdrawals = {};
+
+function renderAdmin() {
+  database.ref('users').once('value').then((uSnap) => {
+    allUsers = uSnap.val() || {};
+    database.ref('deposits').once('value').then((dSnap) => {
+      allDeposits = dSnap.val() || {};
+      database.ref('withdrawals').once('value').then((wSnap) => {
+        allWithdrawals = wSnap.val() || {};
+        renderAdminStats();
+        renderAdminDeposits();
+        renderAdminWithdrawals();
+        renderAdminUsers();
+        renderAdminPlans();
+      });
+    });
+  });
+}
+
+function renderAdminStats() {
+  const users = Object.values(allUsers);
+  const deps = Object.values(allDeposits);
+  const wds = Object.values(allWithdrawals);
+
+  const stats = [
+    { icon:'👥', val:users.length, label:'Total Users' },
+    { icon:'💳', val:deps.length, label:'Total Deposits' },
+    { icon:'⏳', val:deps.filter(d => d.status === 'pending').length, label:'Pending Deposits' },
+    { icon:'💸', val:wds.length, label:'Total Withdrawals' },
+    { icon:'⌛', val:wds.filter(w => w.status === 'pending').length, label:'Pending Withdrawals' },
+    { icon:'📋', val:users.filter(u => u.activePlan).length, label:'Active Plan Users' },
+    { icon:'🚫', val:users.filter(u => u.blocked).length, label:'Blocked Users' },
+    { icon:'✅', val:users.filter(u => !u.blocked).length, label:'Active Users' },
+  ];
+  
+  document.getElementById('admin-stats-grid').innerHTML = stats.map(s => `
+    <div class="admin-stat">
+      <div class="admin-stat-icon">${s.icon}</div>
+      <div class="admin-stat-val">${s.val}</div>
+      <div class="admin-stat-label">${s.label}</div>
+    </div>`).join('');
+}
+
+function switchAdminTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('admin-' + (tab === 'plans' ? 'plans-section' : tab)).classList.add('active');
+}
+
+function renderAdminDeposits() {
+  const el = document.getElementById('admin-deposits');
+  const deps = Object.values(allDeposits).filter(d => d.status === 'pending');
+  if (!deps.length) { el.innerHTML = '<div class="empty-state"><div class="es-icon">✅</div><p>No pending deposits</p></div>'; return; }
+  el.innerHTML = deps.map(d => `
+    <div class="admin-item">
+      <div class="admin-item-row"><span class="admin-item-key">User</span><span class="admin-item-val">${d.userName}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Email</span><span class="admin-item-val">${d.userEmail}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Account</span><span class="admin-item-val">${d.accHolder}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Acc#</span><span class="admin-item-val">${d.accNumber}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">TXN ID</span><span class="admin-item-val">${d.txnId}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Amount</span><span class="admin-item-val" style="color:var(--green);font-size:16px;">Rs ${fmt(d.amount)}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Date</span><span class="admin-item-val">${d.date}</span></div>
+      <div class="admin-item-actions">
+        <button class="btn-approve" onclick="adminApproveDeposit('${d.id}')">✅ Approve</button>
+        <button class="btn-reject" onclick="adminRejectDeposit('${d.id}')">❌ Reject</button>
+      </div>
+    </div>`).join('');
+}
+
+function adminApproveDeposit(id) {
+  const key = Object.keys(allDeposits).find(k => allDeposits[k].id === id);
+  if (!key) return;
+  
+  database.ref('deposits/' + key).update({ status: 'approved' }).then(() => {
+    const dep = allDeposits[key];
+    const userKey = Object.keys(allUsers).find(k => allUsers[k].email === dep.userEmail);
+    if (userKey) {
+      const user = allUsers[userKey];
+      database.ref('users/' + userKey).update({ depositBalance: (user.depositBalance || 0) + dep.amount });
+    }
+    showToast('✅ Deposit approved!', 'success');
+    renderAdmin();
+  });
+}
+
+function adminRejectDeposit(id) {
+  const key = Object.keys(allDeposits).find(k => allDeposits[k].id === id);
+  if (key) { 
+    database.ref('deposits/' + key).update({ status: 'rejected' }).then(() => {
+      showToast('❌ Deposit rejected', 'error');
+      renderAdmin();
+    });
+  }
+}
+
+function renderAdminWithdrawals() {
+  const el = document.getElementById('admin-withdrawals');
+  const wds = Object.values(allWithdrawals).filter(w => w.status === 'pending');
+  if (!wds.length) { el.innerHTML = '<div class="empty-state"><div class="es-icon">✅</div><p>No pending withdrawals</p></div>'; return; }
+  el.innerHTML = wds.map(w => `
+    <div class="admin-item">
+      <div class="admin-item-row"><span class="admin-item-key">User</span><span class="admin-item-val">${w.userName}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Method</span><span class="admin-item-val">${w.method}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Account</span><span class="admin-item-val">${w.holder}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Acc#</span><span class="admin-item-val">${w.accNumber}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Amount</span><span class="admin-item-val" style="color:var(--gold);font-size:16px;">Rs ${fmt(w.amount)}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Date</span><span class="admin-item-val">${w.date}</span></div>
+      <div class="admin-item-actions">
+        <button class="btn-approve" onclick="adminApproveWD('${w.id}')">✅ Approve</button>
+        <button class="btn-reject" onclick="adminRejectWD('${w.id}')">❌ Reject</button>
+      </div>
+    </div>`).join('');
+}
+
+function adminApproveWD(id) {
+  const key = Object.keys(allWithdrawals).find(k => allWithdrawals[k].id === id);
+  if (!key) return;
+  
+  database.ref('withdrawals/' + key).update({ status: 'approved' }).then(() => {
+    const wd = allWithdrawals[key];
+    const userKey = Object.keys(allUsers).find(k => allUsers[k].email === wd.userEmail);
+    if (userKey) {
+      const user = allUsers[userKey];
+      database.ref('users/' + userKey).update({ totalWithdrawals: (user.totalWithdrawals || 0) + 1 });
+    }
+    showToast('✅ Withdrawal approved!', 'success');
+    renderAdmin();
+  });
+}
+
+function adminRejectWD(id) {
+  const key = Object.keys(allWithdrawals).find(k => allWithdrawals[k].id === id);
+  if (!key) return;
+  
+  const wd = allWithdrawals[key];
+  database.ref('withdrawals/' + key).update({ status: 'rejected' }).then(() => {
+    const userKey = Object.keys(allUsers).find(k => allUsers[k].email === wd.userEmail);
+    if (userKey) {
+      const user = allUsers[userKey];
+      database.ref('users/' + userKey).update({ 
+        currentBalance: (user.currentBalance || 0) + wd.amount + (wd.feeDeducted || 0) 
+      });
+    }
+    showToast('↩️ Withdrawal rejected & refunded', 'error');
+    renderAdmin();
+  });
+}
+
+function renderAdminUsers() {
+  const el = document.getElementById('admin-users');
+  const list = Object.values(allUsers);
+  if (!list.length) { el.innerHTML = '<div class="empty-state"><div class="es-icon">👥</div><p>No users registered</p></div>'; return; }
+  el.innerHTML = list.map(u => {
+    const plan = u.activePlan ? PLANS.find(p => p.id === u.activePlan) : null;
+    return `
+    <div class="admin-item">
+      <div class="admin-item-row"><span class="admin-item-key">Name</span><span class="admin-item-val">${u.name}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Email</span><span class="admin-item-val">${u.email}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Phone</span><span class="admin-item-val">${u.phone}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Deposit Bal</span><span class="admin-item-val" style="color:var(--green)">Rs ${fmt(u.depositBalance||0)}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Current Bal</span><span class="admin-item-val" style="color:var(--cyan)">Rs ${fmt(u.currentBalance||0)}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Daily Earn</span><span class="admin-item-val">${plan ? 'Rs ' + fmt(plan.daily) : '—'}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Active Plan</span><span class="admin-item-val">${plan ? plan.name : '—'}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Referrals</span><span class="admin-item-val">${(u.referrals||[]).length}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Withdrawals</span><span class="admin-item-val">${u.totalWithdrawals||0}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Status</span><span class="status-badge ${u.blocked?'badge-rejected':'badge-approved'}">${u.blocked?'BLOCKED':'ACTIVE'}</span></div>
+      <div class="admin-item-actions">
+        ${u.blocked
+          ? `<button class="btn-unblock" onclick="adminToggleBlock('${u.email}',false)">🔓 Unblock</button>`
+          : `<button class="btn-block" onclick="adminToggleBlock('${u.email}',true)">🚫 Block</button>`
+        }
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function adminToggleBlock(email, block) {
+  const userKey = Object.keys(allUsers).find(k => allUsers[k].email === email);
+  if (userKey) {
+    database.ref('users/' + userKey).update({ blocked: block }).then(() => {
+      showToast(block ? '🚫 User blocked' : '✅ User unblocked', block ? 'error' : 'success');
+      renderAdmin();
+    });
+  }
+}
+
+function renderAdminPlans() {
+  const el = document.getElementById('admin-plans-section');
+  const activePlanUsers = Object.values(allUsers).filter(u => u.activePlan);
+  if (!activePlanUsers.length) { el.innerHTML = '<div class="empty-state"><div class="es-icon">📋</div><p>No active plans</p></div>'; return; }
+  el.innerHTML = activePlanUsers.map(u => {
+    const plan = PLANS.find(p => p.id === u.activePlan);
+    return `
+    <div class="admin-item">
+      <div class="admin-item-row"><span class="admin-item-key">User</span><span class="admin-item-val">${u.name}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Plan</span><span class="admin-item-val" style="color:var(--cyan)">${plan?.name||'—'}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Investment</span><span class="admin-item-val" style="color:var(--gold)">Rs ${plan?fmt(plan.invest):'—'}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Daily</span><span class="admin-item-val" style="color:var(--green)">Rs ${plan?fmt(plan.daily):'—'}</span></div>
+      <div class="admin-item-row"><span class="admin-item-key">Expiry</span><span class="admin-item-val">${u.planExpiry||'—'}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function showNotif() { showToast('🔔 No new notifications', 'info'); }
+
+// ============================================================
+//  INIT
+// ============================================================
+function init() {
+  // Check for referral code in URL
+  const params = new URLSearchParams(window.location.search);
+  const refCode = params.get('ref');
+  if (refCode) {
+    document.getElementById('reg-ref').value = refCode.toUpperCase();
+    document.getElementById('ref-autofill').style.display = 'block';
+  }
+
+  auth.onAuthStateChanged((user) => {
+    document.getElementById('loading-screen').classList.remove('active');
+    if (user) {
+      currentUser = user;
+      loadUserData();
+    } else {
+      showScreen('login');
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
